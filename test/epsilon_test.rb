@@ -4,6 +4,14 @@ require 'test/unit'
 require "#{File.dirname(__FILE__)}/../init"
 
 class EpsilonTest < Test::Unit::TestCase
+
+  def setup
+    ::Epsilon::Api.servername = 'EpsilonServer'
+    ::Epsilon::Api.username   = 'EpsilonUser'
+    ::Epsilon::Api.password   = 'EpsilonSecret'
+    ::Epsilon::Api.url        = 'http://rtm.na.epidm.net/weblet/weblet.dll'
+  end
+
   def test_classes_are_loaded
     assert_nothing_raised do
       ::Epsilon
@@ -55,10 +63,23 @@ class EpsilonTest < Test::Unit::TestCase
     end
   end
 
+  # POST
+  #def test_post_doec_succeed
+  #  puts ::Epsilon::Api.deliver('some@email.com')
+  #end
+
+  # URL
+  def test_url_fills_uri
+    ::Epsilon::Api.url = 'http://github.com/rjung/epsilon'
+    assert_equal 'github.com', ::Epsilon::Api.uri.host
+    assert_equal '/rjung/epsilon', ::Epsilon::Api.uri.path
+  end
+
   # XML
 
   def test_xml_does_contain_xml_instruction
-    xml = ::Epsilon::Api.xml('some@email.com')
+    # Need a better way to test this.
+    xml = ::Epsilon::Api.send(:xml, 'some@email.com')
     assert /<\?xml/.match(xml), 'XML does not contain XML-Instructions'
   end
 

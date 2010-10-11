@@ -1,4 +1,6 @@
 require 'builder'
+require 'net/http'
+require 'uri'
 
 module Epsilon
   class Api
@@ -11,6 +13,10 @@ module Epsilon
 
     class << self
 
+      def deliver(email, template = 'default', attributes = {}, configuration = {})
+        post(xml(email, template, attributes, configuration))
+      end
+
       # Retrieving the configuration.
       def configuration
         @@configuration ||= {}
@@ -20,6 +26,28 @@ module Epsilon
       def configuration=(hash)
         raise 'Configuration needs to be a hash' unless hash.is_a?(Hash)
         @@configuration = hash
+      end
+
+      def url=(url)
+        @@uri = URI.parse(url)
+      end
+
+      def uri
+        @@uri ||= nil
+      end
+
+      private
+
+      def http(&block)
+        @@http ||= Net::HTTP.new(uri.host, uri.port)
+      end
+
+      def post(xml)
+        http.post(uri.path, xml, {'Content-type' => 'text/xml',
+                                  'Accept'       => 'text/xml',
+                                  'ServerName'   => servername,
+                                  'UserName'     => username,
+                                  'Password'     => password})
       end
 
       # Retrieving the XML for the POST-Request
@@ -41,8 +69,6 @@ module Epsilon
           end
         end
       end
-
-      private
 
       # Creates XML for Acknowledgements
       def acknowledgements_to(xml, configuration)
