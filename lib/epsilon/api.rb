@@ -1,6 +1,7 @@
 require 'builder'
 require 'net/http'
 require 'uri'
+require 'xml'
 
 module Epsilon
   class Api
@@ -14,7 +15,7 @@ module Epsilon
     class << self
 
       def deliver(email, template = 'default', attributes = {}, configuration = {})
-        post(xml(email, template, attributes, configuration))
+        handle_result(post(xml(email, template, attributes, configuration)))
       end
 
       # Retrieving the configuration.
@@ -48,6 +49,20 @@ module Epsilon
                                   'ServerName'   => servername,
                                   'UserName'     => username,
                                   'Password'     => password})
+      end
+
+      def handle_result(result)
+        if(Net::HTTPOK === result)
+          parser = XML::Parser.string(result.body).parse
+          case parser.find('//DMResponse/Code/text()').first.to_s
+          when 1 # Success
+            parser.find('//DMResponse/ResultData/TransactionStatus/TransactionID//text()').map(&:to_s)
+          else # Raise using Description
+            raise parser.find('//DMResponse/Description/text()').first.to_s
+          end
+        else # Raise using HTTP-Message
+          raise result.message
+        end
       end
 
       # Retrieving the XML for the POST-Request

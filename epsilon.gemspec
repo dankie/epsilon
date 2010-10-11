@@ -14,4 +14,5 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.test_files = ['test/epsilon_test.rb']
   s.add_dependency(%q<builder>, [">= 2.1.2"])
+  s.add_dependency(%q<libxml-ruby>, [">= 1.1.4"])
 end
