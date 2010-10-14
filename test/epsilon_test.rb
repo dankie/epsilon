@@ -86,9 +86,20 @@ class EpsilonTest < Test::Unit::TestCase
 
   def test_handle_result_raises_when_result_is_not_200_OK
     ::Epsilon::Api.expects(:post).with(anything).returns(Net::HTTPBadRequest.new(nil, 200, 'OK'))
-    assert_raises RuntimeError do
-      ::Epsilon::Api.deliver('some@email.com')
+    enable_epsilon do
+      assert_raises RuntimeError do
+        ::Epsilon::Api.deliver('some@email.com')
+      end
     end
+  end
+
+  private
+
+  def enable_epsilon(&block)
+    enabled_before = ::Epsilon::Api.enabled
+    ::Epsilon::Api.enabled = true
+    block.call
+    ::Epsilon::Api.enabled = enabled_before
   end
 
 end

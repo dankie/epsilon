@@ -1,13 +1,14 @@
 require 'builder'
 require 'net/http'
 require 'uri'
-require 'xml'
+#require 'xml'
+require 'rexml/document'
 
 module Epsilon
   class Api
     # The values servername, username and password need to be set with each
     # request in the HTTP-Header.
-    [:servername, :username, :password].each do |attr|
+    [:servername, :username, :password, :enabled, :logger].each do |attr|
       class_eval("def self.#{attr}\n@@#{attr} ||= nil\nend")
       class_eval("def self.#{attr}=(obj)\n@@#{attr} = obj\nend\n")
     end
@@ -15,7 +16,11 @@ module Epsilon
     class << self
 
       def deliver(email, template = 'default', attributes = {}, configuration = {})
-        handle_result(post(xml(email, template, attributes, configuration)))
+        if enabled
+          handle_result(post(xml(email, template, attributes, configuration)))
+        else
+          logger && logger.info("Sending email [#{template}] via Epsilon::Api to #{email}")
+        end
       end
 
       # Retrieving the configuration.
@@ -39,7 +44,7 @@ module Epsilon
 
       private
 
-      def http(&block)
+      def http
         @@http ||= Net::HTTP.new(uri.host, uri.port)
       end
 
@@ -53,12 +58,12 @@ module Epsilon
 
       def handle_result(result)
         if(Net::HTTPOK === result)
-          parser = XML::Parser.string(result.body).parse
-          case parser.find('//DMResponse/Code/text()').first.to_s
-          when 1 # Success
-            parser.find('//DMResponse/ResultData/TransactionStatus/TransactionID//text()').map(&:to_s)
+          doc = REXML::Document.new(result.body)
+          case REXML::XPath.match(doc, '//DMResponse/Code/text()').first.to_s
+          when '1' # Success
+            REXML::XPath.match(doc, '//DMResponse/ResultData/TransactionStatus/TransactionID//text()').map(&:to_s)
           else # Raise using Description
-            raise parser.find('//DMResponse/Description/text()').first.to_s
+            raise REXML::XPath.match(doc, '//DMResponse/Description/text()').first.to_s
           end
         else # Raise using HTTP-Message
           raise result.message
