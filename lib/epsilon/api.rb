@@ -59,6 +59,7 @@ module Epsilon
       def handle_result(result)
         if(Net::HTTPOK === result)
           doc = REXML::Document.new(result.body)
+          # Is there a better way than using REXML::Xpath.match to find text-node within XML?
           case REXML::XPath.match(doc, '//DMResponse/Code/text()').first.to_s
           when '1' # Success
             REXML::XPath.match(doc, '//DMResponse/ResultData/TransactionStatus/TransactionID//text()').map(&:to_s)
