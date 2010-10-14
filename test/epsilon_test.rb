@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'test/unit'
+require 'mocha'
 
 require "#{File.dirname(__FILE__)}/../init"
 
@@ -81,6 +82,13 @@ class EpsilonTest < Test::Unit::TestCase
     # Need a better way to test this.
     xml = ::Epsilon::Api.send(:xml, 'some@email.com')
     assert /<\?xml/.match(xml), 'XML does not contain XML-Instructions'
+  end
+
+  def test_handle_result_raises_when_result_is_not_200_OK
+    ::Epsilon::Api.expects(:post).with(anything).returns(Net::HTTPBadRequest.new(nil, 200, 'OK'))
+    assert_raises RuntimeError do
+      ::Epsilon::Api.deliver('some@email.com')
+    end
   end
 
 end
