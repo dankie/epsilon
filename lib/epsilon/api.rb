@@ -6,14 +6,10 @@ require 'rexml/document'
 
 module Epsilon
   class Api
-    # The values servername, username and password need to be set with each
-    # request in the HTTP-Header.
-    [:servername, :username, :password, :enabled, :logger].each do |attr|
-      class_eval("def self.#{attr}\n@@#{attr} ||= nil\nend")
-      class_eval("def self.#{attr}=(obj)\n@@#{attr} = obj\nend\n")
-    end
-
     class << self
+
+      # These values need to be set with each request in the HTTP-Header.
+      attr_accessor :servername, :username, :password, :enabled, :logger
 
       # Retrieving the configuration.
       attr_accessor :configuration
