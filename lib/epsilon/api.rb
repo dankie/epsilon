@@ -15,23 +15,15 @@ module Epsilon
 
     class << self
 
+      # Retrieving the configuration.
+      attr_accessor :configuration
+
       def deliver(email, template = 'default', attributes = {}, configuration = {})
         if enabled
           handle_result(post(xml(email, template, attributes, configuration)))
         else
           logger && logger.info("Sending email [#{template}] via Epsilon::Api to #{email}")
         end
-      end
-
-      # Retrieving the configuration.
-      def configuration
-        @@configuration ||= {}
-      end
-
-      # Setting the configuration.
-      def configuration=(hash)
-        raise 'Configuration needs to be a hash' unless hash.is_a?(Hash)
-        @@configuration = hash
       end
 
       def url=(url)

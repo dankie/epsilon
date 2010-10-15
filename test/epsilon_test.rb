@@ -58,12 +58,6 @@ class EpsilonTest < Test::Unit::TestCase
     end
   end
 
-  def test_configuration_raises_when_not_setting_a_hash
-    assert_raises RuntimeError do
-      ::Epsilon::Api.configuration = "String"
-    end
-  end
-
   # POST
   #def test_post_doec_succeed
   #  puts ::Epsilon::Api.deliver('some@email.com')
