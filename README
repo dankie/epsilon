@@ -1,0 +1,21 @@
+
+  Epsilon
+  =======
+
+  Interface to Real-Time Messaging (RTM) of DREAMmail’s high-volume email
+  solution.
+
+  Please configure like this (if you're using this within an Rails-application,
+  you can place this to config/initializers/epsilon.rb):
+    ::Epsilon::Api.url           = 'http://rtm.us.epidm.net/weblet/weblet.dll'
+    ::Epsilon::Api.servername    = 'YSN1'
+    ::Epsilon::Api.username      = 'Username'
+    ::Epsilon::Api.password      = 'Password'
+    ::Epsilon::Api.configuration = { :client_name   => 'ClientName' }
+    ::Epsilon::Api.logger        = ::Rails.logger
+    ::Epsilon::Api.enabled       = true
+
+  To send a email, use this call:
+    ::Epsilon::Api.deliver('some@email.com', 'Campaign', 'TemplateName',
+        { 'param1' => 'value1', 'param2' => 'value2', ... })
+

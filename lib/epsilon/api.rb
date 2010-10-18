@@ -14,9 +14,9 @@ module Epsilon
       # Retrieving the configuration.
       attr_accessor :configuration
 
-      def deliver(email, template = 'default', attributes = {}, configuration = {})
+      def deliver(email, campaign, template, attributes = {}, configuration = {})
         if enabled
-          handle_result(post(xml(email, template, attributes, configuration)))
+          handle_result(post(xml(email, campaign, template, attributes, configuration)))
         else
           logger && logger.info("Sending email [#{template}] via Epsilon::Api to #{email}")
         end
@@ -60,7 +60,7 @@ module Epsilon
       end
 
       # Retrieving the XML for the POST-Request
-      def xml(email, template = 'default', attributes = {}, configuration = {})
+      def xml(email, campaign, template, attributes = {}, configuration = {})
         xml = Builder::XmlMarkup.new
         xml.instruct!
         xml.comment!('Created by Epsilon::Api')
@@ -68,7 +68,7 @@ module Epsilon
           weblet.RTMEmailToEmailAddress do |email_to_email_address|
             # XXX Acknowledgements yet disabled
             #acknowledgements_to(email_to_email_address, configuration)
-            template_info(email_to_email_address, template, configuration)
+            template_info(email_to_email_address, campaign, template, configuration)
             email_to_email_address.ToEmailAddress do |to_email_address|
               to_email_address.EventEmailAddress do |event_email_address|
                 event_email_address.EmailAddress(email)
@@ -88,8 +88,8 @@ module Epsilon
         end
       end
 
-      def template_info(xml, template, configuration)
-        conf = self.configuration.merge(configuration)
+      def template_info(xml, campaign, template, configuration)
+        conf = self.configuration.merge(configuration).merge({ :campaign_name => campaign })
         { :client_name   => 'ClientName',
           :site_name     => 'SiteName',
           :campaign_name => 'CampaignName' }.each do |key,value|

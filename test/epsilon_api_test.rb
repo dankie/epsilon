@@ -4,7 +4,7 @@ require 'mocha'
 
 require "#{File.dirname(__FILE__)}/../init"
 
-class EpsilonTest < Test::Unit::TestCase
+class EpsilonApiTest < Test::Unit::TestCase
 
   def setup
     ::Epsilon::Api.servername = 'EpsilonServer'
@@ -74,7 +74,7 @@ class EpsilonTest < Test::Unit::TestCase
 
   def test_xml_does_contain_xml_instruction
     # Need a better way to test this.
-    xml = ::Epsilon::Api.send(:xml, 'some@email.com')
+    xml = ::Epsilon::Api.send(:xml, 'some@email.com', 'Campaign', 'Template')
     assert /<\?xml/.match(xml), 'XML does not contain XML-Instructions'
   end
 
@@ -82,7 +82,7 @@ class EpsilonTest < Test::Unit::TestCase
     ::Epsilon::Api.expects(:post).with(anything).returns(Net::HTTPBadRequest.new(nil, 200, 'OK'))
     enable_epsilon do
       assert_raises RuntimeError do
-        ::Epsilon::Api.deliver('some@email.com')
+        ::Epsilon::Api.deliver('some@email.com', 'Campaign', 'Template')
       end
     end
   end
