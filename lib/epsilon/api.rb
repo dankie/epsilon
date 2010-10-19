@@ -18,7 +18,7 @@ module Epsilon
         if enabled
           handle_result(post(xml(email, campaign, template, attributes, configuration)))
         else
-          logger && logger.info("Sending email [#{template}] via Epsilon::Api to #{email}")
+          logger && logger.info("Sending email [#{campaign}/#{template}] via Epsilon::Api to #{email}")
         end
       end
 
