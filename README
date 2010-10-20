@@ -14,6 +14,7 @@
     ::Epsilon::Api.configuration = { :client_name   => 'ClientName' }
     ::Epsilon::Api.logger        = ::Rails.logger
     ::Epsilon::Api.enabled       = true
+    #::Epsilon::Api.proxy_url     = 'http://proxy:8080/'
 
   To send a email, use this call:
     ::Epsilon::Api.deliver('some@email.com', 'Campaign', 'TemplateName',

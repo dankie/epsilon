@@ -1,5 +1,5 @@
 require 'builder'
-require 'net/http'
+require 'net/https'
 require 'uri'
 #require 'xml'
 require 'rexml/document'
@@ -30,18 +30,30 @@ module Epsilon
         @@uri ||= nil
       end
 
+      def proxy_url=(url)
+        @@proxy_uri = URI.parse(url)
+      end
+
+      def proxy_uri
+        @@proxy_uri ||= ENV['http_proxy'] ? URI.parse(ENV['http_proxy']) : nil
+      end
+
       private
 
       def http
-        @@http ||= Net::HTTP.new(uri.host, uri.port)
+        @http ||= proxy_uri ?
+          Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port) :
+          Net::HTTP
       end
 
       def post(xml)
-        http.post(uri.path, xml, {'Content-type' => 'text/xml',
-                                  'Accept'       => 'text/xml',
-                                  'ServerName'   => servername,
-                                  'UserName'     => username,
-                                  'Password'     => password})
+        http.start(uri.host, uri.port) do |agent|
+           agent.post(uri.path, xml, {'Content-type' => 'text/xml',
+                                      'Accept'       => 'text/xml',
+                                      'ServerName'   => servername,
+                                      'UserName'     => username,
+                                      'Password'     => password})
+        end
       end
 
       def handle_result(result)
@@ -104,7 +116,7 @@ module Epsilon
         xml.EventVariables do |event_variables|
           variables.each do |key, value|
             event_variables.Variable do |variable|
-              variable.Name(key.to_s)
+              variable.Name("eventvar:#{key.to_s}")
               variable.Value(value.to_s)
             end
           end
