@@ -12,6 +12,6 @@ Gem::Specification.new do |s|
     'lib/epsilon/api.rb'
   ]
   s.require_paths = ['lib']
-  s.test_files = ['test/epsilon_test.rb']
+  s.test_files = ['test/epsilon_api_test.rb']
   s.add_dependency(%q<builder>, [">= 2.1.2"])
 end
