@@ -1,4 +1,3 @@
-
   Epsilon
   =======
 
@@ -12,7 +11,7 @@
     ::Epsilon::Api.username      = 'Username'
     ::Epsilon::Api.password      = 'Password'
     ::Epsilon::Api.configuration = { :client_name   => 'ClientName' }
-    ::Epsilon::Api.logger        = ::Rails.logger
+    #::Epsilon::Api.logger        = ::Rails.logger
     ::Epsilon::Api.enabled       = true
     #::Epsilon::Api.proxy_url     = 'http://proxy:8080/'
 
