@@ -113,11 +113,13 @@ module Epsilon
       end
 
       def event_variables(xml, variables)
-        xml.EventVariables do |event_variables|
-          variables.each do |key, value|
-            event_variables.Variable do |variable|
-              variable.Name("eventvar:#{key.to_s}")
-              variable.Value(value.to_s)
+        unless variables.empty?
+          xml.EventVariables do |event_variables|
+            variables.each do |key, value|
+              event_variables.Variable do |variable|
+                variable.Name("eventvar:#{key.to_s}")
+                variable.Value(value.to_s)
+              end
             end
           end
         end
