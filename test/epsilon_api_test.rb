@@ -87,6 +87,17 @@ class EpsilonApiTest < Test::Unit::TestCase
     end
   end
 
+  def test_xml_does_contain_site_name_if_its_given_with_symbol
+    # Need a better way to test this.
+    xml = ::Epsilon::Api.send(:xml, 'some@email.com', 'Campaign', 'Template', {}, {:site_name => 'Bla'})
+    assert /<SiteName>/.match(xml), 'XML does not contain SiteName'
+  end
+
+  def test_xml_does_contain_site_name_if_its_given_with_string
+    xml = ::Epsilon::Api.send(:xml, 'some@email.com', 'Campaign', 'Template', {}, {'site_name' => 'Bla'})
+    assert /<SiteName>/.match(xml), "XML does not contain SiteName #{xml}"
+  end
+
   private
 
   def enable_epsilon(&block)
