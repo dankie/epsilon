@@ -1,15 +1,14 @@
 require 'builder'
 require 'net/https'
 require 'uri'
-#require 'xml'
 require 'rexml/document'
 
 module Epsilon
-  class Api
+  module Api
     class << self
 
       # These values need to be set with each request in the HTTP-Header.
-      attr_accessor :servername, :username, :password, :enabled, :logger
+      attr_accessor :servername, :username, :password, :enabled, :logger, :message
 
       # Retrieving the configuration.
       attr_accessor :configuration
@@ -23,11 +22,19 @@ module Epsilon
       end
 
       def url=(url)
-        @@uri = URI.parse(url)
+        @uri = URI.parse(url)
       end
 
-      def uri
-        @@uri ||= nil
+      def url
+        @uri ||= nil
+      end
+
+      def proxy_url=(url)
+        @proxy_uri = URI.parse(url)
+      end
+
+      def proxy_uri
+        @proxy_uri ||= ENV['http_proxy'] ? URI.parse(ENV['http_proxy']) : nil
       end
 
       def proxy_url=(url)
@@ -48,11 +55,12 @@ module Epsilon
 
       def post(xml)
         http.start(uri.host, uri.port) do |agent|
-           agent.post(uri.path, xml, {'Content-type' => 'text/xml',
-                                      'Accept'       => 'text/xml',
-                                      'ServerName'   => servername,
-                                      'UserName'     => username,
-                                      'Password'     => password})
+          agent.use_ssl = (uri.scheme == 'https') # SSL?
+          agent.post(uri.path, xml, {'Content-type' => 'text/xml',
+                                     'Accept'       => 'text/xml',
+                                     'ServerName'   => servername,
+                                     'UserName'     => username,
+                                     'Password'     => password})
         end
       end
 
@@ -62,12 +70,15 @@ module Epsilon
           # Is there a better way than using REXML::Xpath.match to find text-node within XML?
           case REXML::XPath.match(doc, '//DMResponse/Code/text()').first.to_s
           when '1' # Success
-            REXML::XPath.match(doc, '//DMResponse/ResultData/TransactionStatus/TransactionID//text()').map(&:to_s)
+            self.message = result.message
+            REXML::XPath.match(doc, '//DMResponse/ResultData/TransactionID//text()').map(&:to_s)
           else # Raise using Description
-            raise REXML::XPath.match(doc, '//DMResponse/Description/text()').first.to_s
+            self.message = REXML::XPath.match(doc, '//DMResponse/Description/text()').first.to_s
+            false
           end
-        else # Raise using HTTP-Message
-          raise result.message
+        else # resulting in HTTP-Message
+          self.message = result.message
+          false
         end
       end
 
@@ -103,7 +114,7 @@ module Epsilon
       def template_info(xml, campaign, template, configuration)
         conf = self.configuration.merge(configuration).merge({ :campaign_name => campaign })
         # Handle non-symbolic hash-keys
-        conf.each_key do |key|
+        conf.keys.each do |key|
           if key.is_a?(String)
             conf[key.to_sym] = conf.delete(key)
           end

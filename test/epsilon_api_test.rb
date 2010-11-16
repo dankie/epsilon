@@ -2,7 +2,7 @@ require 'rubygems'
 require 'test/unit'
 require 'mocha'
 
-require "#{File.dirname(__FILE__)}/../init"
+require "#{File.expand_path(File.dirname(__FILE__))}/../init.rb"
 
 class EpsilonApiTest < Test::Unit::TestCase
 
@@ -59,15 +59,16 @@ class EpsilonApiTest < Test::Unit::TestCase
   end
 
   # POST
-  #def test_post_doec_succeed
+  #def test_post_does_succeed
   #  puts ::Epsilon::Api.deliver('some@email.com')
   #end
 
   # URL
+
   def test_url_fills_uri
     ::Epsilon::Api.url = 'http://github.com/rjung/epsilon'
-    assert_equal 'github.com', ::Epsilon::Api.uri.host
-    assert_equal '/rjung/epsilon', ::Epsilon::Api.uri.path
+    assert_equal 'github.com', ::Epsilon::Api.url.host
+    assert_equal '/rjung/epsilon', ::Epsilon::Api.url.path
   end
 
   # XML
@@ -78,12 +79,20 @@ class EpsilonApiTest < Test::Unit::TestCase
     assert /<\?xml/.match(xml), 'XML does not contain XML-Instructions'
   end
 
-  def test_handle_result_raises_when_result_is_not_200_OK
-    ::Epsilon::Api.expects(:post).with(anything).returns(Net::HTTPBadRequest.new(nil, 200, 'OK'))
+  def test_handle_results_false_when_result_is_not_200_OK
+    ::Epsilon::Api.expects(:post).with(anything).returns(Net::HTTPBadRequest.new(nil, 200, 'Bad Request'))
     enable_epsilon do
-      assert_raises RuntimeError do
+      assert_nothing_raised do
         ::Epsilon::Api.deliver('some@email.com', 'Campaign', 'Template')
       end
+    end
+  end
+
+  def test_handle_fills_message_when_result_is_not_200_OK
+    ::Epsilon::Api.expects(:post).with(anything).returns(Net::HTTPBadRequest.new(nil, 200, 'Bad Request'))
+    enable_epsilon do
+      ::Epsilon::Api.deliver('some@email.com', 'Campaign', 'Template')
+      assert_equal 'Bad Request', ::Epsilon::Api.message
     end
   end
 
