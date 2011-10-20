@@ -113,16 +113,10 @@ module Epsilon
 
       def template_info(xml, campaign, template, configuration)
         conf = self.configuration.merge(configuration).merge({ :campaign_name => campaign })
-        # Handle non-symbolic hash-keys
-        conf.keys.each do |key|
-          if key.is_a?(String)
-            conf[key.to_sym] = conf.delete(key)
-          end
-        end
         { :client_name   => 'ClientName',
           :site_name     => 'SiteName',
           :campaign_name => 'CampaignName' }.each do |key,value|
-          if(var = conf[key])
+          if(var = conf.with_indifferent_access[key])
             xml.tag!(value, var)
           end
         end
